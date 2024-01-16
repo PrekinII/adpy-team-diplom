@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 from models import create_tables
 
 
-DSN = 'postgresql://postgres:touching@localhost:5432/VKinder'
+DSN = "postgresql://postgres:touching@localhost:5432/VKinder"
 engine = sqlalchemy.create_engine(DSN)
 
 create_tables(engine)
