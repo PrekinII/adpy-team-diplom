@@ -1,6 +1,6 @@
 import vk_api
 from random import random
-from itertools import chain
+from itertools import chain, count
 from pprint import pprint
 
 
@@ -13,44 +13,38 @@ class VKBotAPI:
         self.user_init_link = "https://vk.com/id"
         self.vk_session = vk_api.VkApi(token=self.api_token)
 
-    @staticmethod
-    def likes_finder(user_pics) -> list:
-        likes_cnt = []
-        for pic in chain.from_iterable([user_pics["items"]]):
-            max_likes = str(pic["likes"]["count"])
-            likes_cnt.append(int(max_likes))
-        likes_cnt = sorted(likes_cnt)[-3:]
-
-        return likes_cnt
-
     def get_user_pics(self, user_id):
-        user_pics = self.vk_session.method(
-            "photos.getAll", {"owner_id": user_id, "extended": True}
-        )
 
-        pics_ids = []
-        for likes in user_pics["items"]:
-            pics_selection = [
-                x
-                for x in [likes["likes"]["count"]]
-                if x in self.likes_finder(user_pics)
-            ]
-            if pics_selection:
-                # max_pics_size = max(likes["sizes"], key=lambda x: x.get("height", 0) + x.get("width", 0))
-                pics_ids.append(likes["id"])
+        return_values_length = len(self.vk_session.method(
+            "photos.getAll", {"owner_id": user_id}
+        )["items"])
 
-        return pics_ids
+        all_pics = []
+        for offset in count(0, return_values_length):
+            user_pics = self.vk_session.method(
+                "photos.getAll", {"owner_id": user_id, "offset": offset, "extended": True}
+            )
 
-    def make_attachment(self, media_id=456239116, user_id=5469708):
-        # for media_id in media_ids:
-        self.vk_session.method(
-            "messages.send",
-            {
-                "user_id": user_id,
-                "random_id": random(),
-                "attachment": f"photo{user_id}_{media_id}",
-            },
-        )
+            if not user_pics["items"]:
+                break
+            all_likes = [[x["id"], x["likes"]["count"]] for x in user_pics["items"]]
+            all_pics.extend(all_likes)
+
+        liked_pics_ids = sorted(all_pics, key=lambda x: x[1])[-3:]
+        liked_pics_ids = [x[0] for x in chain.from_iterable([liked_pics_ids])]
+        return liked_pics_ids
+
+    # media_id = 456239116, user_id = 5469708 user_id=1046913
+    def make_attachment(self, media_ids, user_id=5469708):
+        for media_id in media_ids:
+            self.vk_session.method(
+                "messages.send",
+                {
+                    "user_id": user_id,
+                    "random_id": random(),
+                    "attachment": f"photo{user_id}_{media_id}",
+                },
+            )
 
     def get_user_info(self):
         user_search_res = self.vk_session.method(
@@ -64,16 +58,18 @@ class VKBotAPI:
         )
 
         users_main_data = []
-        for usr_lnk in user_search_res["items"]:
+        for usr_lnk in chain.from_iterable([user_search_res["items"]]):
             get_pics_ids = self.get_user_pics(
                 usr_lnk["id"]
-            )  # implement below in self.make_attachment()
+            )
+            pprint(get_pics_ids)
             user_data = [
                 usr_lnk["first_name"],
                 usr_lnk["last_name"],
                 self.user_init_link + str(usr_lnk["id"]),
-                self.make_attachment(),  # here
             ]
+            # self.make_attachment(get_pics_ids)
             users_main_data.append(user_data)
         pprint(users_main_data)
+
         return users_main_data
