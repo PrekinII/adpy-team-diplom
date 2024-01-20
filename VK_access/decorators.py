@@ -11,7 +11,9 @@ def api_slicer_decorator(api_method_name, method_val_name="owner_id", sub_dict="
             )
 
             all_data = []
-            for offset in range(1):  # count(0, api_data_length) - replace to get a full version
+            for offset in range(
+                1
+            ):  # count(0, api_data_length) - replace to get a full version
                 data = inner_func(self, offset, *args, **kwargs)
 
                 if not data[sub_dict]:

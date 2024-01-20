@@ -8,7 +8,6 @@ class User(Base):
     __tablename__ = "user"
 
     vk_user_id = sq.Column(sq.Integer, primary_key=True)
-    first_name = sq.Column(sq.String(length=20), nullable=False)
     sex = sq.Column(sq.Integer, nullable=False)
     age = sq.Column(sq.Integer, nullable=False)
     city = sq.Column(sq.String(length=20), nullable=False)
@@ -17,7 +16,7 @@ class User(Base):
     interest_person = relationship("InterestPerson", backref="user")
 
     def __str__(self):
-        return f"{self.vk_user_id, self.first_name, self.sex, self.age, self.city}"
+        return f"{self.vk_user_id, self.sex, self.age, self.city}"
 
 
 class Offer(Base):
@@ -26,9 +25,7 @@ class Offer(Base):
     vk_offer_id = sq.Column(sq.Integer, primary_key=True)
     first_name = sq.Column(sq.String(length=20), nullable=False)
     last_name = sq.Column(sq.String(length=20), nullable=False)
-    sex = sq.Column(sq.Integer, nullable=False)
-    age = sq.Column(sq.Integer, nullable=False)
-    city = sq.Column(sq.String(length=20), nullable=False)
+    profile_link = sq.Column(sq.String(length=500), nullable=False)
 
     user_offer = relationship("UserOffer", backref="offer")
     photo = relationship("Photo", backref="offer")

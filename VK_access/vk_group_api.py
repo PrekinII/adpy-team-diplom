@@ -15,14 +15,21 @@ class VKBotAPI:
         self.user_init_link = "https://vk.com/id"
         self.vk_session = vk_api.VkApi(token=self.api_token)
 
-    def api_slicer(self, method_name: str, method_val_name="owner_id", value="user_id", sub_dict="items",) -> int:
-        call_slice_length = len(self.vk_session.method(method_name, {method_val_name: value})[sub_dict])
+    def api_slicer(
+        self,
+        method_name: str,
+        method_val_name="owner_id",
+        value="user_id",
+        sub_dict="items",
+    ) -> int:
+        call_slice_length = len(
+            self.vk_session.method(method_name, {method_val_name: value})[sub_dict]
+        )
 
         return call_slice_length
 
     @api_slicer_decorator("photos.getAll")
     def get_user_pics(self, offset, user_id):
-
         user_pics = self.vk_session.method(
             "photos.getAll",
             {"owner_id": user_id, "offset": offset, "extended": True},  # add url
@@ -57,7 +64,6 @@ class VKBotAPI:
 
     @api_slicer_decorator("users.search")
     def get_user_info(self, offset):
-
         user_search = self.vk_session.method(
             "users.search",
             {
