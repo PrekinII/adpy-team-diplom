@@ -12,8 +12,8 @@ class User(Base):
     age = sq.Column(sq.Integer, nullable=False)
     city = sq.Column(sq.String(length=20), nullable=False)
 
-    user_offer = relationship("UserOffer", backref="user")
-    interest_person = relationship("InterestPerson", backref="user")
+    user_offer = relationship("UserOffer", backref="user_offers")
+    interest_person = relationship("InterestPerson", backref="user_interests")
 
     def __str__(self):
         return f"{self.vk_user_id, self.sex, self.age, self.city}"
@@ -27,9 +27,9 @@ class Offer(Base):
     last_name = sq.Column(sq.String(length=20), nullable=False)
     profile_link = sq.Column(sq.String(length=500), nullable=False)
 
-    user_offer = relationship("UserOffer", backref="offer")
-    photo = relationship("Photo", backref="offer")
-    interest_person = relationship("InterestPerson", backref="offer")
+    user_offer = relationship("UserOffer", backref="offers")
+    photo = relationship("Photo", backref="offers")
+    interest_person = relationship("InterestPerson", backref="offers")
 
     def __str__(self):
         return f"{self.vk_offer_id, self.first_name, self.last_name, self.sex, self.age, self.city}"
@@ -46,8 +46,8 @@ class UserOffer(Base):
     black_list = sq.Column(sq.Integer, nullable=False, default=0)
     favorite_list = sq.Column(sq.Integer, nullable=False, default=0)
 
-    user = relationship("User", backref="user_offer", cascade="all, delete")
-    offer = relationship("Offer", backref="user_offer", cascade="all, delete")
+    user = relationship("User", backref="user_offers", cascade="all, delete")
+    offer = relationship("Offer", backref="user_offers", cascade="all, delete")
 
     def __str__(self):
         return f"{self.black_list}"
@@ -62,7 +62,7 @@ class Photo(Base):
     )
     photo_url = sq.Column(sq.String, nullable=False)
 
-    offer = relationship("Offer", backref="photo", cascade="all, delete")
+    offer = relationship("Offer", backref="photos", cascade="all, delete")
 
     def __str__(self):
         return f"{self.vk_offer_id, self.photo_url}"
@@ -74,7 +74,7 @@ class Interest(Base):
     interest_id = sq.Column(sq.Integer, primary_key=True)
     interest = sq.Column(sq.String(length=50), nullable=False)
 
-    interest_person = relationship("InterestPerson", backref="interest")
+    interest_person = relationship("InterestPerson", backref="interests")
 
     def __str__(self):
         return self.interest
@@ -90,10 +90,10 @@ class InterestPerson(Base):
         sq.Integer, sq.ForeignKey("interest.interest_id"), nullable=False
     )
 
-    user = relationship("User", backref="interest_person", cascade="all, delete")
-    offer = relationship("Offer", backref="interest_person", cascade="all, delete")
+    user = relationship("User", backref="interest_persons", cascade="all, delete")
+    offer = relationship("Offer", backref="interest_persons", cascade="all, delete")
     interest = relationship(
-        "Interest", backref="interest_person", cascade="all, delete"
+        "Interest", backref="interest_persons", cascade="all, delete"
     )
 
 
