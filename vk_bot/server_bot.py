@@ -4,10 +4,14 @@ from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from vk_api.utils import get_random_id
 from urllib.parse import urlencode
 
+from datetime import datetime
+
+from VKinder_DB.main import add_user, add_offer, add_interest
+
 
 class Server_bot:
     def __init__(self, api_token, group_id, api_id):
-        # self.server_name = server_name
+
         self.vk = vk_api.VkApi(token=api_token)  # Для использования Long Poll
         self.long_poll = VkBotLongPoll(self.vk, group_id)  # Для Long Poll Api
         self.vk_api = self.vk.get_api()  # Для методов ВК апи
@@ -71,7 +75,24 @@ class Server_bot:
         self.user_info = self.vk_api.users.get(
             user_id=user_id, fields=("city", "sex", "bdate", "interests")
         )
-        # print(user_info)  # Просто дл наглядности получения информации о пользователе
+        user_id, sex, city, bdate, interest = [
+            (
+                x.get("id", None),
+                x.get("sex", None),
+                x.get("city", {}).get("title", None),
+                x.get("bdate", None),
+                x.get("interests"),
+            )
+            for x in self.user_info
+        ][0]
+        print(interest)
+        day, month, year = map(int, bdate.split("."))
+        bdate = datetime(year, month, day)
+        age = int((datetime.today() - bdate).days // 365.25)
+
+        add_user(user_id, sex, age, city)  # filling db "user" table
+        #add_interest(interest)
+        print(self.user_info)  # Просто дл наглядности получения информации о пользователе
         return self.user_info
 
     def user_token_button(self, group_id):  # Создаем кнопку запроса токена
@@ -145,6 +166,7 @@ class Server_bot:
                 request = event.obj.message["text"]
                 print(request)
                 if request == "Следующий":
+                    #add_offer(3499455, 383632700, 'Ксения', 'Тарновицкая', 'https://vk.com/id383632700')  # Тест на запись таблицу
                     self.send_msg(
                         event.obj.message[
                             "peer_id"

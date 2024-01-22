@@ -1,11 +1,14 @@
 import sqlalchemy
+#from sqlalchemy.dialects.postgresql import psycopg2
+
+
 
 from sqlalchemy.orm import sessionmaker
 
-from VK_access.vk_access_creds import file_path  # eugiv only
-from models import create_tables
+#from VK_access.vk_access_creds import file_path  # eugiv only
+from VKinder_DB.models import create_tables
 from VKinder_DB import models as m
-from aws_postgres_conn import DBConnector  # eugiv only
+#from aws_postgres_conn import DBConnector  # eugiv only
 
 
 # create_connection = DBConnector(file_path, 'localhost', 5432, 'ubuntu', 22,
@@ -15,7 +18,7 @@ from aws_postgres_conn import DBConnector  # eugiv only
 # DSN = (f"postgresql://{create_connection.database_user}:{create_connection.postgres_password}@localhost:"
 #        f"{tunnel.local_bind_port}/{create_connection.database}")  # eugiv only
 
-DSN = "postgresql://postgres:touching@localhost:5432/VKinder"
+#DSN = "postgresql://postgres:*******@localhost:5432/db_vkinder"  # prekinii only
 engine = sqlalchemy.create_engine(DSN)
 
 create_tables(engine)
@@ -27,6 +30,7 @@ session = Session()
 def add_user(vk_user_id, sex, age, city):
     with Session() as session:
         user_find = session.query(m.User.vk_user_id).all()
+        print(user_find)
         if vk_user_id not in [user[0] for user in user_find]:
             user = m.User(
                 vk_user_id=vk_user_id,
@@ -39,7 +43,7 @@ def add_user(vk_user_id, sex, age, city):
 
 
 def add_offer(vk_user_id, vk_offer_id, first_name, last_name, profile_link):
-    with Session as session:
+    with Session() as session:
         offer_find = session.query(m.Offer.vk_offer_id).all()
         if vk_offer_id not in [offer[0] for offer in offer_find]:
             offer = m.Offer(
