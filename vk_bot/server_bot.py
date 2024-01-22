@@ -1,8 +1,12 @@
 import vk_api
+
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from vk_api.utils import get_random_id
 from urllib.parse import urlencode
+from datetime import datetime
+
+from VKinder_DB.main import add_user, add_interest
 
 from datetime import datetime
 
@@ -73,7 +77,7 @@ class Server_bot:
 
     def get_user_info(self, user_id):  # Получаем инфу о пользователе
         self.user_info = self.vk_api.users.get(
-            user_id=user_id, fields=("city", "sex", "bdate", "interests")
+            user_ids=user_id, fields=("city", "sex", "bdate", "interests")
         )
         user_id, sex, city, bdate, interest = [
             (
@@ -93,6 +97,9 @@ class Server_bot:
         add_user(user_id, sex, age, city)  # filling db "user" table
         #add_interest(interest)
         print(self.user_info)  # Просто дл наглядности получения информации о пользователе
+        #add_interest(interest)
+        # print(user_info_db)  # Просто дл наглядности получения информации о пользователе
+
         return self.user_info
 
     def user_token_button(self, group_id):  # Создаем кнопку запроса токена

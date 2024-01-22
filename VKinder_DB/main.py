@@ -1,24 +1,28 @@
 import sqlalchemy
 #from sqlalchemy.dialects.postgresql import psycopg2
 
-
-
 from sqlalchemy.orm import sessionmaker
 
-#from VK_access.vk_access_creds import file_path  # eugiv only
+from VK_access.vk_access_creds import file_path  # eugiv only
 from VKinder_DB.models import create_tables
 from VKinder_DB import models as m
-#from aws_postgres_conn import DBConnector  # eugiv only
+from VKinder_DB.aws_postgres_conn import DBConnector  # eugiv only
 
 
-# create_connection = DBConnector(file_path, 'localhost', 5432, 'ubuntu', 22,
-#                                 'postgres', 'vkinder')  # eugiv only
-# tunnel = create_connection.connection()  # eugiv only
-#
-# DSN = (f"postgresql://{create_connection.database_user}:{create_connection.postgres_password}@localhost:"
-#        f"{tunnel.local_bind_port}/{create_connection.database}")  # eugiv only
+create_connection = DBConnector(
+    file_path, "localhost", 5432, "ubuntu", 22, "postgres", "vkinder"
+)  # eugiv only
+tunnel = create_connection.connection()  # eugiv only
+
 
 #DSN = "postgresql://postgres:*******@localhost:5432/db_vkinder"  # prekinii only
+
+DSN = (
+    f"postgresql://{create_connection.database_user}:{create_connection.postgres_password}@localhost:"
+    f"{tunnel.local_bind_port}/{create_connection.database}"
+)  # eugiv only
+
+
 engine = sqlalchemy.create_engine(DSN)
 
 create_tables(engine)
@@ -27,7 +31,7 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 
-def add_user(vk_user_id, sex, age, city):
+def add_user(vk_user_id: int, sex: int, age: int, city: str):
     with Session() as session:
         user_find = session.query(m.User.vk_user_id).all()
         print(user_find)
@@ -107,14 +111,16 @@ def add_interest(interest, vk_user_id=0, vk_offer_id=0):
         interest_find = session.query(m.Interest.interest).filter(
             m.Interest.interest == interest
         )
-        if interest not in [interest[0] for interest in interest_find]:
-            interest_add = m.Interest(interest="interest")
+
+        print(interest_find)
+        if interest not in interest_find:
+            interest_add = m.Interest(interest=interest)
             session.add(interest_add)
-        interest_id_find = (
-            session.query(m.Interest.interest_id)
-            .filter(m.Interest.interest == interest)
-            .all()[0][0]
+
+        interest_id_find = session.query(m.Interest.interest_id).filter(
+            m.Interest.interest == interest
         )
+
         user_find = (
             session.query(m.InterestPerson.vk_user_id)
             .filter(m.InterestPerson.interest_id == interest_id_find)

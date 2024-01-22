@@ -12,8 +12,10 @@ class User(Base):
     age = sq.Column(sq.Integer, nullable=False)
     city = sq.Column(sq.String(length=20), nullable=False)
 
+
     #user_offer = relationship("UserOffer", backref="user_offers")
     #interest_person = relationship("InterestPerson", backref="user_interests")
+
 
     def __str__(self):
         return f"{self.vk_user_id, self.sex, self.age, self.city}"
@@ -30,6 +32,7 @@ class Offer(Base):
     #user_offer = relationship("UserOffer", backref="offers")
     #photo = relationship("Photo", backref="offers")
     #interest_person = relationship("InterestPerson", backref="offers")
+
 
     def __str__(self):
         return f"{self.vk_offer_id, self.first_name, self.last_name, self.sex, self.age, self.city}"
@@ -75,6 +78,7 @@ class Interest(Base):
     interest = sq.Column(sq.String(length=50), nullable=False)
 
     #interest_person = relationship("InterestPerson", backref="interests")
+
 
     def __str__(self):
         return {self.interest}
