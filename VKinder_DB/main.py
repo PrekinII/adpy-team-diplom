@@ -2,10 +2,25 @@ import sys
 import sqlalchemy
 from pprint import pprint
 from sqlalchemy.orm import sessionmaker
-from models import create_tables
+from VK_access.vk_access_creds import file_path  # eugiv only
+from VKinder_DB.models import create_tables
 from VKinder_DB import models as m
+from VKinder_DB.aws_postgres_conn import DBConnector  # eugiv only
 
-DSN = "postgresql://postgres:touching@localhost:5432/VKinder"
+# DSN = "postgresql://postgres:touching@localhost:5432/VKinder"
+
+create_connection = DBConnector(
+    file_path, "localhost", 5432, "ubuntu", 22, "postgres", "vkinder"
+)  # eugiv only
+tunnel = create_connection.connection()  # eugiv only
+
+
+#DSN = "postgresql://postgres:*******@localhost:5432/db_vkinder"  # prekinii only
+
+DSN = (
+    f"postgresql://{create_connection.database_user}:{create_connection.postgres_password}@localhost:"
+    f"{tunnel.local_bind_port}/{create_connection.database}"
+)  # eugiv only
 
 
 engine = sqlalchemy.create_engine(DSN)
@@ -31,23 +46,25 @@ def add_user(vk_user_id: int, sex: int, age: int, city: str):
             session.commit()
 
 
-def add_offer(vk_user_id, vk_offer_id, first_name, last_name, profile_link):
+def add_offer(vk_user_id, first_name, last_name, profile_link):
     with Session() as session:
-        offer_find = session.query(m.Offer.vk_offer_id).all()
-        if vk_offer_id not in [offer[0] for offer in offer_find]:
-            offer = m.Offer(
-                vk_offer_id=vk_offer_id,
-                first_name=first_name,
-                last_name=last_name,
-                profile_link=profile_link,
-            )
-            session.add(offer)
+        offer = m.Offer(
+            first_name=first_name,
+            last_name=last_name,
+            profile_link=profile_link,
+        )
+        session.add(offer)
+        session.flush()
+
+        vk_offer_id = offer.vk_offer_id
+
         user_offer_find = (
             session.query(m.UserOffer.user_offer_id)
             .filter(m.UserOffer.vk_user_id == vk_user_id)
             .filter(m.UserOffer.vk_offer_id == vk_offer_id)
             .all()
-        )
+    )
+
         if len(user_offer_find) == 0:
             user_offer = m.UserOffer(
                 vk_user_id=vk_user_id,
@@ -56,7 +73,7 @@ def add_offer(vk_user_id, vk_offer_id, first_name, last_name, profile_link):
                 favorite_list=0,
             )
             session.add(user_offer)
-        session.commit()
+            session.commit()
 
 
 def add_black_list(vk_user_id, vk_offer_id):
@@ -97,7 +114,6 @@ def add_interest(interest, vk_user_id=0, vk_offer_id=0):
             m.Interest.interest == interest
         )
 
-        print(interest_find)
         if interest not in interest_find:
             interest_add = m.Interest(interest=interest)
             session.add(interest_add)

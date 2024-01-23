@@ -1,3 +1,5 @@
+import itertools
+
 import vk_api
 
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
@@ -6,10 +8,8 @@ from vk_api.utils import get_random_id
 from urllib.parse import urlencode
 from datetime import datetime
 
-from VKinder_DB.main import add_user, add_interest
 
-from datetime import datetime
-
+from VK_access.vk_group_api import VKBotAPI
 from VKinder_DB.main import add_user, add_offer, add_interest
 
 
@@ -50,8 +50,7 @@ class Server_bot:
         for event in self.long_poll.listen():
             if event.type == VkBotEventType.MESSAGE_NEW:
                 request = event.obj.message["text"]
-                if request == "Привет":
-                    self.get_user_info(event.obj.message["from_id"])
+                if request == "Привет" or "Ghbdtn":
                     self.send_msg(event.obj.message["peer_id"], message="Хелоу")
                     keyboard_oauth = self.user_token_button(self.api_id)
                     self.send_msg(
@@ -61,9 +60,23 @@ class Server_bot:
                         message="Получите и отправьте нам токен",
                         keyboard=keyboard_oauth,
                     )
-                    self.get_user_token()
-                    return
-                elif request == "Пока":
+
+                    user_id = event.obj.message["from_id"]
+                    sex, age, city = self.get_user_info(user_id)
+                    if sex == 1:
+                        sex = 2
+                    elif sex == 2:
+                        sex = 1
+                    else:
+                        sex = 0
+
+                    user_inst = VKBotAPI(self.get_user_token(), city, age, sex)
+                    for users_tup in itertools.chain(user_inst.process_user_info()):
+                        first_name, last_name, profile_link = users_tup
+                        add_offer(user_id, first_name, last_name, profile_link)
+                    break
+
+                elif request == "Пока" or "Gjrf":
                     self.send_msg(
                         event.obj.message["peer_id"],
                         message="Жаль, но ты умрешь в одиночестве",
@@ -76,10 +89,7 @@ class Server_bot:
                     )
 
     def get_user_info(self, user_id):  # Получаем инфу о пользователе
-<<<<<<< HEAD
-        self.user_info = self.vk_api.users.get(user_id=user_id, fields=("city", "sex", "bdate", "interests"))
-        print(user_info)  # Просто дл наглядности получения информации о пользователе
-=======
+
         self.user_info = self.vk_api.users.get(
             user_ids=user_id, fields=("city", "sex", "bdate", "interests")
         )
@@ -93,19 +103,14 @@ class Server_bot:
             )
             for x in self.user_info
         ][0]
-        print(interest)
+
         day, month, year = map(int, bdate.split("."))
         bdate = datetime(year, month, day)
         age = int((datetime.today() - bdate).days // 365.25)
 
         add_user(user_id, sex, age, city)  # filling db "user" table
-        #add_interest(interest)
-        print(self.user_info)  # Просто дл наглядности получения информации о пользователе
-        #add_interest(interest)
-        # print(user_info_db)  # Просто дл наглядности получения информации о пользователе
-
->>>>>>> 721c9f73acc3734a5247958520b5d514a38a3d35
-        return self.user_info
+        add_interest(interest)
+        return sex, age, city
 
     def user_token_button(self, group_id):  # Создаем кнопку запроса токена
         base_url = "https://oauth.vk.com/authorize"
@@ -176,7 +181,7 @@ class Server_bot:
         for event in self.long_poll.listen():
             if event.type == VkBotEventType.MESSAGE_NEW:
                 request = event.obj.message["text"]
-                print(request)
+                # print(request)
                 if request == "Следующий":
                     #add_offer(3499455, 383632700, 'Ксения', 'Тарновицкая', 'https://vk.com/id383632700')  # Тест на запись таблицу
                     self.send_msg(
@@ -195,4 +200,4 @@ class Server_bot:
                         event.obj.message["peer_id"],  # Отправляем список избранных
                         message="Вот Вам куча информации",
                     )
-                    print(request)
+                    # print(request)
