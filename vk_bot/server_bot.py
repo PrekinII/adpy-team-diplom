@@ -57,7 +57,7 @@ class Server_bot:
 
     def get_user_info(self, user_id):  # Получаем инфу о пользователе
         self.user_info = self.vk_api.users.get(user_id=user_id, fields=("city", "sex", "bdate", "interests"))
-        #print(user_info)  # Просто дл наглядности получения информации о пользователе
+        print(user_info)  # Просто дл наглядности получения информации о пользователе
         return self.user_info
 
     def user_token_button(self, group_id):  # Создаем кнопку запроса токена

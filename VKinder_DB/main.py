@@ -1,8 +1,12 @@
+import sys
 import sqlalchemy
+from pprint import pprint
 from sqlalchemy.orm import sessionmaker
 from models import create_tables
 from VKinder_DB import models as m
+from pprint import pprint
 
+#pprint(sys.path)
 DSN = "postgresql://postgres:touching@localhost:5432/VKinder"
 engine = sqlalchemy.create_engine(DSN)
 
@@ -134,3 +138,6 @@ def get_favorite(vk_user_id):
 
 
 session.close()
+
+if __name__=='__main__':
+    pprint(get_favorite(0))
