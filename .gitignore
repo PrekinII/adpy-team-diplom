@@ -7,3 +7,4 @@ vk_bot/__pycache__/
 __pycache__/
 .idea/
 .pytest_cache/
+config.py

@@ -7,20 +7,20 @@ from VKinder_DB.models import create_tables
 from VKinder_DB import models as m
 from VKinder_DB.aws_postgres_conn import DBConnector  # eugiv only
 
-# DSN = "postgresql://postgres:touching@localhost:5432/VKinder"
+DSN = "postgresql://postgres:touching@localhost:5432/VKinder"
 
-create_connection = DBConnector(
-    file_path, "localhost", 5432, "ubuntu", 22, "postgres", "vkinder"
-)  # eugiv only
-tunnel = create_connection.connection()  # eugiv only
+# create_connection = DBConnector(
+#     file_path, "localhost", 5432, "ubuntu", 22, "postgres", "vkinder"
+# )  # eugiv only
+# tunnel = create_connection.connection()  # eugiv only
 
 
 #DSN = "postgresql://postgres:*******@localhost:5432/db_vkinder"  # prekinii only
 
-DSN = (
-    f"postgresql://{create_connection.database_user}:{create_connection.postgres_password}@localhost:"
-    f"{tunnel.local_bind_port}/{create_connection.database}"
-)  # eugiv only
+# DSN = (
+#     f"postgresql://{create_connection.database_user}:{create_connection.postgres_password}@localhost:"
+#     f"{tunnel.local_bind_port}/{create_connection.database}"
+# )  # eugiv only
 
 
 engine = sqlalchemy.create_engine(DSN)
