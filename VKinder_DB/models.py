@@ -94,7 +94,6 @@ class InterestPerson(Base):
     offer = relationship('Offer', back_populates='interest_person', cascade='all, delete')
     interest = relationship('Interest', back_populates='interest_person', cascade='all, delete')
 
-    )
     def __str__(self):
         return {self.interest_id, self.vk_user_id, self.vk_offer_id, self.interest}
 
