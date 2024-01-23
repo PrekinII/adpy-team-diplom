@@ -8,7 +8,6 @@ class User(Base):
     __tablename__ = 'user'
 
     vk_user_id = sq.Column(sq.Integer, primary_key=True)
-    first_name = sq.Column(sq.String(length=20), nullable=False)
     sex = sq.Column(sq.Integer, nullable=False)
     age = sq.Column(sq.Integer, nullable=False)
     city = sq.Column(sq.String(length=20), nullable=False)
@@ -23,12 +22,10 @@ class User(Base):
 class Offer(Base):
     __tablename__ = 'offer'
 
-    vk_offer_id = sq.Column(sq.Integer, primary_key=True)
+    vk_offer_id = sq.Column(sq.Integer, primary_key=True, autoincrement=True)
     first_name = sq.Column(sq.String(length=20), nullable=False)
     last_name = sq.Column(sq.String(length=20), nullable=False)
-    sex = sq.Column(sq.Integer, nullable=False)
-    age = sq.Column(sq.Integer, nullable=False)
-    city = sq.Column(sq.String(length=20), nullable=False)
+    profile_link = sq.Column(sq.String(length=100), nullable=False)
 
     user_offer = relationship('UserOffer', back_populates='offer')
     photo = relationship('Photo', back_populates='offer')

@@ -84,11 +84,11 @@ class VKBotAPI:
         for usr_lnk in chain.from_iterable([user_search_res]):
             # get_pics_ids = self.get_user_pics(usr_lnk["id"])
 
-            user_data = [
+            user_data = (
                 usr_lnk["first_name"],
                 usr_lnk["last_name"],
                 self.user_init_link + str(usr_lnk["id"]),
-            ]
+            )
             # self.make_attachment(get_pics_ids)
             users_main_data.append(user_data)
         pprint(len(users_main_data))
