@@ -7,7 +7,7 @@ from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from vk_api.utils import get_random_id
 from urllib.parse import urlencode
 from datetime import datetime
-
+from random import random
 
 from VK_access.vk_group_api import VKBotAPI
 from VKinder_DB.main import add_user, add_offer, add_interest, show_offer
@@ -72,8 +72,9 @@ class Server_bot:
 
                     user_inst = VKBotAPI(self.get_user_token(), city, age, sex)
                     for users_tup in itertools.chain(user_inst.process_user_info()):
-                        first_name, last_name, profile_link = users_tup
-                        add_offer(user_id, first_name, last_name, profile_link)
+                        first_name, last_name, user_id, profile_link = users_tup
+                        add_offer(user_id, first_name, last_name, profile_link, user_id)
+
                     break
 
                 elif request == "Пока" or "Gjrf":
@@ -131,10 +132,12 @@ class Server_bot:
         return keyboard_1
 
     def show_friends_button(self):  # Кнопки для фото и прочего
+
         keyboard_settings = dict(one_time=False)
         keyboard_2 = VkKeyboard(**keyboard_settings)
+
         keyboard_2.add_button(
-            label="Следующий",
+            label='Следующий',
             color=VkKeyboardColor.PRIMARY,
             payload={"type": "show_next_user"},
         )
@@ -165,7 +168,7 @@ class Server_bot:
         for event in self.long_poll.listen():
             if event.type == VkBotEventType.MESSAGE_NEW:
                 request = event.obj.message["text"]
-                if request == "Старт":
+                if request == "Старт" or "Cnfhn":
                     keyboard_show = self.show_friends_button()
                     self.send_msg(
                         event.obj.message["peer_id"],  # Отправляем кнопки
@@ -186,13 +189,17 @@ class Server_bot:
 
                 if request == "Следующий":
 
-                    #add_offer(3499455, 383632700, 'Ксения', 'Тарновицкая', 'https://vk.com/id383632700')  # Тест на запись таблицу
                     self.send_msg(
                         event.obj.message[
                             "peer_id"
-                        ],  # Сюда должна прилететь информация (Возможно фотки придется отправить дополнительным письмом
-                        message=show_offer(person_count), #"-имя, фамилия\n-ссылка на профиль-\n-три фотографии"
+                        ],
+                        message=show_offer(person_count)["person"],
                     )
+
+                    user_inst = VKBotAPI(self.user_token, age=None, hometown=None, sex=None)
+                    liked_pics_ids = user_inst.process_user_pics(show_offer(person_count)["user_id"])
+                    self.make_attachment(liked_pics_ids, event.obj.message["from_id"], show_offer(person_count)["user_id"])
+
                     person_count += 1
                     print(person_count)
                 elif request == "В избранные":
@@ -206,3 +213,14 @@ class Server_bot:
                         message="Вот Вам куча информации",
                     )
                     # print(request)
+
+    def make_attachment(self, media_ids, user_id_hunter, user_id_prey):
+        for media_id in media_ids:
+            self.vk.method(
+                "messages.send",
+                {
+                    "user_id": user_id_hunter,
+                    "random_id": random(),
+                    "attachment": f"photo{user_id_prey}_{media_id}",
+                },
+            )
