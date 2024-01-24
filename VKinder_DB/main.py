@@ -7,7 +7,7 @@ from VKinder_DB.models import create_tables
 from VKinder_DB import models as m
 from VKinder_DB.aws_postgres_conn import DBConnector  # eugiv only
 
-DSN = "postgresql://postgres:touching@localhost:5432/VKinder"
+#DSN = "postgresql://postgres:touching@localhost:5432/VKinder"
 
 # create_connection = DBConnector(
 #     file_path, "localhost", 5432, "ubuntu", 22, "postgres", "vkinder"
@@ -15,7 +15,7 @@ DSN = "postgresql://postgres:touching@localhost:5432/VKinder"
 # tunnel = create_connection.connection()  # eugiv only
 
 
-#DSN = "postgresql://postgres:*******@localhost:5432/db_vkinder"  # prekinii only
+DSN = "postgresql://postgres:VosminoG16098316@localhost:5432/db_vkinder"  # prekinii only
 
 # DSN = (
 #     f"postgresql://{create_connection.database_user}:{create_connection.postgres_password}@localhost:"
@@ -54,26 +54,26 @@ def add_offer(vk_user_id, first_name, last_name, profile_link):
             profile_link=profile_link,
         )
         session.add(offer)
-        session.flush()
+        session.commit() #flush
 
-        vk_offer_id = offer.vk_offer_id
-
-        user_offer_find = (
-            session.query(m.UserOffer.user_offer_id)
-            .filter(m.UserOffer.vk_user_id == vk_user_id)
-            .filter(m.UserOffer.vk_offer_id == vk_offer_id)
-            .all()
-    )
-
-        if len(user_offer_find) == 0:
-            user_offer = m.UserOffer(
-                vk_user_id=vk_user_id,
-                vk_offer_id=vk_offer_id,
-                black_list=0,
-                favorite_list=0,
-            )
-            session.add(user_offer)
-            session.commit()
+    #     vk_offer_id = offer.vk_offer_id
+    #
+    #     user_offer_find = (
+    #         session.query(m.UserOffer.user_offer_id)
+    #         .filter(m.UserOffer.vk_user_id == vk_user_id)
+    #         .filter(m.UserOffer.vk_offer_id == vk_offer_id)
+    #         .all()
+    # )
+    #
+    #     if len(user_offer_find) == 0:
+    #         user_offer = m.UserOffer(
+    #             vk_user_id=vk_user_id,
+    #             vk_offer_id=vk_offer_id,
+    #             black_list=0,
+    #             favorite_list=0,
+    #         )
+    #         session.add(user_offer)
+    #         session.commit()
 
 
 def add_black_list(vk_user_id, vk_offer_id):
@@ -203,6 +203,18 @@ def get_offer(vk_user_id):
         result = get_offer_info(vk_user_id, offer)
     return result
 
+def show_offer(person_id):  # Показать найденыша
+    with Session() as session:
+        offer = (
+            session.query(
+                m.Offer.vk_offer_id,
+                m.Offer.first_name,
+                m.Offer.last_name,
+                m.Offer.profile_link,
+            ).filter(m.Offer.vk_offer_id == person_id))
+        for x in offer:
+            person = (f'{x.first_name} | {x.last_name} | {x.profile_link}')
+    return person
 
 def get_favorite(vk_user_id):
     with Session() as session:

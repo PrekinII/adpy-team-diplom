@@ -10,7 +10,7 @@ from datetime import datetime
 
 
 from VK_access.vk_group_api import VKBotAPI
-from VKinder_DB.main import add_user, add_offer, add_interest
+from VKinder_DB.main import add_user, add_offer, add_interest, show_offer
 
 
 class Server_bot:
@@ -178,18 +178,23 @@ class Server_bot:
                     self.send_msg(event.obj.message["peer_id"], message="Введите Старт")
 
     def choose_friends(self):  # Обрабатываем кнопки и отправляем инфу
+        person_count = 1
         for event in self.long_poll.listen():
             if event.type == VkBotEventType.MESSAGE_NEW:
                 request = event.obj.message["text"]
                 # print(request)
+
                 if request == "Следующий":
+
                     #add_offer(3499455, 383632700, 'Ксения', 'Тарновицкая', 'https://vk.com/id383632700')  # Тест на запись таблицу
                     self.send_msg(
                         event.obj.message[
                             "peer_id"
                         ],  # Сюда должна прилететь информация (Возможно фотки придется отправить дополнительным письмом
-                        message="-имя, фамилия\n-ссылка на профиль-\n-три фотографии",
+                        message=show_offer(person_count), #"-имя, фамилия\n-ссылка на профиль-\n-три фотографии"
                     )
+                    person_count += 1
+                    print(person_count)
                 elif request == "В избранные":
                     self.send_msg(
                         event.obj.message["peer_id"],  # Добавляем в избранные
