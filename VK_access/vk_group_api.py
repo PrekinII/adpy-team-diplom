@@ -7,7 +7,7 @@ from VK_access.decorators import api_slicer_decorator
 
 
 class VKBotAPI:
-    def __init__(self, api_token: str, hometown: str, age: int, sex: int):
+    def __init__(self, api_token: str, hometown, age, sex):
         self.api_token = api_token
         self.hometown = hometown
         self.age = age
@@ -82,14 +82,13 @@ class VKBotAPI:
 
         users_main_data = []
         for usr_lnk in chain.from_iterable([user_search_res]):
-            # get_pics_ids = self.get_user_pics(usr_lnk["id"])
 
             user_data = (
                 usr_lnk["first_name"],
                 usr_lnk["last_name"],
+                usr_lnk["id"],
                 self.user_init_link + str(usr_lnk["id"]),
             )
-            # self.make_attachment(get_pics_ids)
             users_main_data.append(user_data)
         pprint(len(users_main_data))
         pprint(users_main_data)

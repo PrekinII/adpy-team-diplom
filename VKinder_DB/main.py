@@ -9,18 +9,18 @@ from VKinder_DB.aws_postgres_conn import DBConnector  # eugiv only
 
 #DSN = "postgresql://postgres:touching@localhost:5432/VKinder"
 
-# create_connection = DBConnector(
-#     file_path, "localhost", 5432, "ubuntu", 22, "postgres", "vkinder"
-# )  # eugiv only
-# tunnel = create_connection.connection()  # eugiv only
+create_connection = DBConnector(
+    file_path, "localhost", 5432, "ubuntu", 22, "postgres", "vkinder"
+)  # eugiv only
+tunnel = create_connection.connection()  # eugiv only
 
 
-DSN = "postgresql://postgres:VosminoG16098316@localhost:5432/db_vkinder"  # prekinii only
+# DSN = "postgresql://postgres:VosminoG16098316@localhost:5432/db_vkinder"  # prekinii only
 
-# DSN = (
-#     f"postgresql://{create_connection.database_user}:{create_connection.postgres_password}@localhost:"
-#     f"{tunnel.local_bind_port}/{create_connection.database}"
-# )  # eugiv only
+DSN = (
+    f"postgresql://{create_connection.database_user}:{create_connection.postgres_password}@localhost:"
+    f"{tunnel.local_bind_port}/{create_connection.database}"
+)  # eugiv only
 
 
 engine = sqlalchemy.create_engine(DSN)
@@ -46,12 +46,13 @@ def add_user(vk_user_id: int, sex: int, age: int, city: str):
             session.commit()
 
 
-def add_offer(vk_user_id, first_name, last_name, profile_link):
+def add_offer(vk_user_id, first_name, last_name, profile_link, user_id):
     with Session() as session:
         offer = m.Offer(
             first_name=first_name,
             last_name=last_name,
             profile_link=profile_link,
+            user_id=user_id,
         )
         session.add(offer)
         session.commit() #flush
@@ -211,10 +212,12 @@ def show_offer(person_id):  # Показать найденыша
                 m.Offer.first_name,
                 m.Offer.last_name,
                 m.Offer.profile_link,
+                m.Offer.user_id,
             ).filter(m.Offer.vk_offer_id == person_id))
         for x in offer:
-            person = (f'{x.first_name} | {x.last_name} | {x.profile_link}')
-    return person
+            person = f'{x.first_name} | {x.last_name} | {x.profile_link}'
+            user_id = x.user_id
+    return {"person": person, "user_id": user_id}
 
 def get_favorite(vk_user_id):
     with Session() as session:

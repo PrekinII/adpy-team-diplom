@@ -26,6 +26,7 @@ class Offer(Base):
     first_name = sq.Column(sq.String(length=20), nullable=False)
     last_name = sq.Column(sq.String(length=20), nullable=False)
     profile_link = sq.Column(sq.String(length=100), nullable=False)
+    user_id = sq.Column(sq.Integer(), nullable=False)
 
     user_offer = relationship('UserOffer', back_populates='offer')
     photo = relationship('Photo', back_populates='offer')
