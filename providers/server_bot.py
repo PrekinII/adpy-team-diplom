@@ -8,13 +8,19 @@ from vk_api.utils import get_random_id
 from urllib.parse import urlencode
 from datetime import datetime
 from random import random
-from VK_access.vk_group_api import VKBotAPI
-from VKinder_DB.main import add_user, add_offer, add_interest, show_offer, add_user_offer, get_offer_list
+from providers.vk_group_api import VKBotAPI
+from postgres_db.main import (
+    add_user,
+    add_offer,
+    add_interest,
+    show_offer,
+    add_user_offer,
+    get_offer_list,
+)
 
 
-class Server_bot:
+class ServerBot:
     def __init__(self, api_token, group_id, api_id):
-
         self.vk = vk_api.VkApi(token=api_token)  # Для использования Long Poll
         self.long_poll = VkBotLongPoll(self.vk, group_id)  # Для Long Poll Api
         self.vk_api = self.vk.get_api()  # Для методов ВК апи
@@ -39,9 +45,6 @@ class Server_bot:
                 message=message,
                 random_id=get_random_id(),
             )
-
-    # def test_send(self):  # Тест отправки сообщений
-    #     self.send_msg(ID пользователя, "Я живой!!! Я могу писать тебе сообщения")
 
     def find_pair(
         self,
@@ -72,7 +75,7 @@ class Server_bot:
                     user_inst = VKBotAPI(self.get_user_token(), city, age, sex)
                     for users_tup in itertools.chain(user_inst.process_user_info()):
                         first_name, last_name, user_id, profile_link = users_tup
-                        add_offer(user_id, first_name, last_name, profile_link, user_id)
+                        add_offer(first_name, last_name, profile_link, user_id)
 
                     break
 
@@ -89,7 +92,6 @@ class Server_bot:
                     )
 
     def get_user_info(self, user_id):  # Получаем инфу о пользователе
-
         self.user_info = self.vk_api.users.get(
             user_ids=user_id, fields=("city", "sex", "bdate", "interests")
         )
@@ -112,7 +114,7 @@ class Server_bot:
         add_interest(interest)
         return sex, age, city
 
-    def user_token_button(self, group_id):  # Создаем кнопку запроса токена
+    def user_token_button(self, group_id):
         base_url = "https://oauth.vk.com/authorize"
         params = {
             "client_id": group_id,
@@ -126,17 +128,15 @@ class Server_bot:
         keyboard_1 = VkKeyboard(**keyboard_settings)
         keyboard_1.add_openlink_button(label="Получить токен", link=oauth_url)
 
-        # print(oauth_url)
-        # print(group_id)
         return keyboard_1
 
-    def show_friends_button(self):  # Кнопки для фото и прочего
-
+    @staticmethod
+    def show_friends_button():  # Кнопки для фото и прочего
         keyboard_settings = dict(one_time=False)
         keyboard_2 = VkKeyboard(**keyboard_settings)
 
         keyboard_2.add_button(
-            label='Следующий',
+            label="Следующий",
             color=VkKeyboardColor.PRIMARY,
             payload={"type": "show_next_user"},
         )
@@ -147,12 +147,10 @@ class Server_bot:
         )
         return keyboard_2
 
-    def get_user_token(self):  # Вылавливаем токен от юзера и ищем людей
+    def get_user_token(self):
         for event in self.long_poll.listen():
             if event.type == VkBotEventType.MESSAGE_NEW:
                 self.user_token = event.obj.message["text"]
-                # print(user_token)
-                # print(event.obj.message)
                 self.send_msg(
                     event.obj.message["peer_id"],
                     message="Спасибо, можете удалить сообщение с токеном в целях безопасноти",
@@ -175,30 +173,32 @@ class Server_bot:
                         keyboard=keyboard_show,
                     )
                     self.choose_friends()
-
                 else:
                     self.send_msg(event.obj.message["peer_id"], message="Введите Старт")
 
-    def choose_friends(self):  # Обрабатываем кнопки и отправляем инфу
+    def choose_friends(self):
         person_count = 1
         for event in self.long_poll.listen():
             if event.type == VkBotEventType.MESSAGE_NEW:
                 request = event.obj.message["text"]
-                # print(request)
 
                 if request == "Следующий":
-
                     self.send_msg(
-                        event.obj.message[
-                            "peer_id"
-                        ],
+                        event.obj.message["peer_id"],
                         message=show_offer(person_count)["person"],
                     )
 
-                    user_inst = VKBotAPI(self.user_token, age=None, hometown=None, sex=None)
-                    liked_pics_ids = user_inst.process_user_pics(show_offer(person_count)["user_id"])
-                    self.make_attachment(liked_pics_ids, event.obj.message["from_id"],
-                                         show_offer(person_count)["user_id"])
+                    user_inst = VKBotAPI(
+                        self.user_token, age=None, hometown=None, sex=None
+                    )
+                    liked_pics_ids = user_inst.process_user_pics(
+                        show_offer(person_count)["user_id"]
+                    )
+                    self.make_attachment(
+                        liked_pics_ids,
+                        event.obj.message["from_id"],
+                        show_offer(person_count)["user_id"],
+                    )
                     person_count += 1
 
                 elif request == "В избранные":
@@ -206,14 +206,14 @@ class Server_bot:
                         event.obj.message["peer_id"],  # Добавляем в избранные
                         message="Добавлен в избранные",
                     )
-                    add_user_offer(person_count-1, event.obj.message["peer_id"])
-                    print(person_count)
+                    add_user_offer(person_count - 1, event.obj.message["peer_id"])
                 elif request == "Показать избранных":
                     self.send_msg(
                         event.obj.message["peer_id"],  # Отправляем список избранных
-                        message=get_offer_list(event.obj.message["peer_id"])  # Отдаем список избранных
+                        message=get_offer_list(
+                            event.obj.message["peer_id"]
+                        ),  # Отдаем список избранных
                     )
-                    # print(request)
 
     def make_attachment(self, media_ids, user_id_hunter, user_id_prey):
         for media_id in media_ids:
