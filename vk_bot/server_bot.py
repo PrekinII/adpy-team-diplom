@@ -8,9 +8,8 @@ from vk_api.utils import get_random_id
 from urllib.parse import urlencode
 from datetime import datetime
 from random import random
-
 from VK_access.vk_group_api import VKBotAPI
-from VKinder_DB.main import add_user, add_offer, add_interest, show_offer
+from VKinder_DB.main import add_user, add_offer, add_interest, show_offer, add_user_offer, get_offer_list
 
 
 class Server_bot:
@@ -119,7 +118,7 @@ class Server_bot:
             "client_id": group_id,
             "redirect_uri": "https://oauth.vk.com/authorize",
             "display": "page",
-            "scope": "photos",
+            "scope": "notify,photos,notes,pages,wall,stories",
             "response_type": "token",
         }
         oauth_url = f"{base_url}?{urlencode(params)}"
@@ -198,19 +197,21 @@ class Server_bot:
 
                     user_inst = VKBotAPI(self.user_token, age=None, hometown=None, sex=None)
                     liked_pics_ids = user_inst.process_user_pics(show_offer(person_count)["user_id"])
-                    self.make_attachment(liked_pics_ids, event.obj.message["from_id"], show_offer(person_count)["user_id"])
-
+                    self.make_attachment(liked_pics_ids, event.obj.message["from_id"],
+                                         show_offer(person_count)["user_id"])
                     person_count += 1
-                    print(person_count)
+
                 elif request == "В избранные":
                     self.send_msg(
                         event.obj.message["peer_id"],  # Добавляем в избранные
                         message="Добавлен в избранные",
                     )
+                    add_user_offer(person_count-1, event.obj.message["peer_id"])
+                    print(person_count)
                 elif request == "Показать избранных":
                     self.send_msg(
                         event.obj.message["peer_id"],  # Отправляем список избранных
-                        message="Вот Вам куча информации",
+                        message=get_offer_list(event.obj.message["peer_id"])  # Отдаем список избранных
                     )
                     # print(request)
 
@@ -221,6 +222,7 @@ class Server_bot:
                 {
                     "user_id": user_id_hunter,
                     "random_id": random(),
+                    "message": "========",
                     "attachment": f"photo{user_id_prey}_{media_id}",
                 },
             )
