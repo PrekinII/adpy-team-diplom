@@ -1,9 +1,8 @@
 import vk_api
-from random import random
 from itertools import chain
 from pprint import pprint
 
-from VK_access.decorators import api_slicer_decorator
+from decorators.api_slicer_dec import api_slicer_decorator
 
 
 class VKBotAPI:
@@ -50,18 +49,6 @@ class VKBotAPI:
 
         return liked_pics_ids
 
-    # media_id = 456239116, user_id = 5469708 user_id=1046913
-    # def make_attachment(self, media_ids, user_id=5469708):
-    #     for media_id in media_ids:
-    #         self.vk_session.method(
-    #             "messages.send",
-    #             {
-    #                 "user_id": user_id,
-    #                 "random_id": random(),
-    #                 "attachment": f"photo{user_id}_{media_id}",
-    #             },
-    #         )
-
     @api_slicer_decorator("users.search")
     def get_user_info(self, offset):
         user_search = self.vk_session.method(
@@ -82,7 +69,6 @@ class VKBotAPI:
 
         users_main_data = []
         for usr_lnk in chain.from_iterable([user_search_res]):
-
             user_data = (
                 usr_lnk["first_name"],
                 usr_lnk["last_name"],

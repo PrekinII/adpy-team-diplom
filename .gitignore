@@ -3,8 +3,8 @@
 .idea
 sensitive.txt
 venv/
-vk_bot/__pycache__/
+main/__pycache__/
 __pycache__/
 .idea/
 .pytest_cache/
-vk_bot/config.py
+main/config.py
