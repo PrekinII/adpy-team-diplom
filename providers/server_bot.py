@@ -163,7 +163,10 @@ class ServerBot:
                 )  # messages.delete упорно не работает, может на свежую голову допилю
                 self.send_msg(
                     event.obj.message["peer_id"],
-                    message="Введите Старт, чтобы продолжить",
+                    message="Rotate the two locking cylinders counterclockwise. Do it. Now, open the port cover. "
+                            "Pull to break the seal. Good. Now, remove the shock dampening assembly. "
+                            "You can now access the CPU. Do you see it? "
+                            "If not it's ok just enter - Старт",
                 )
                 return self.user_token
 
@@ -174,7 +177,7 @@ class ServerBot:
                 if request == "Старт" or "Cnfhn":
                     keyboard_show = self.show_friends_button()
                     self.send_msg(
-                        event.obj.message["peer_id"],  # Отправляем кнопки
+                        event.obj.message["peer_id"],
                         message="Я все нашел, тебе надо только пожмякать",
                         keyboard=keyboard_show,
                     )
@@ -184,6 +187,7 @@ class ServerBot:
 
     def choose_friends(self):
         person_count = 1
+        favorites_click_flag = False
         for event in self.long_poll.listen():
             if event.type == VkBotEventType.MESSAGE_NEW:
                 request = event.obj.message["text"]
@@ -210,27 +214,35 @@ class ServerBot:
                 elif request == "Заблокировать":
                     self.send_msg(
                         event.obj.message["peer_id"],
-                        message="Больше вы его не увидите",
+                        message="Hasta la vista, baby",
                     )
                     add_user_offer(
                         person_count - 1, event.obj.message["peer_id"], "foe"
                     )
 
-                elif request == "В избранные":
+                elif request == "В Избранное":
                     self.send_msg(
-                        event.obj.message["peer_id"],  # Добавляем в избранные
-                        message="Добавлен в избранные",
+                        event.obj.message["peer_id"],
+                        message="I'll be back",
                     )
                     add_user_offer(
                         person_count - 1, event.obj.message["peer_id"], "friend"
                     )
+                    favorites_click_flag = True
+
                 elif request == "Показать избранных":
-                    self.send_msg(
-                        event.obj.message["peer_id"],  # Отправляем список избранных
-                        message=get_offer_list(
-                            event.obj.message["peer_id"]
-                        ),  # Отдаем список избранных
-                    )
+                    if not favorites_click_flag:
+                        self.send_msg(
+                            event.obj.message["peer_id"],
+                            message="Cyborgs don't feel pain. I do. Don't do that again.",
+                        )
+                    else:
+                        self.send_msg(
+                            event.obj.message["peer_id"],
+                            message=get_offer_list(
+                                event.obj.message["peer_id"]
+                            ),
+                        )
 
     def make_attachment(self, media_ids, user_id_hunter, user_id_prey):
         for media_id in media_ids:

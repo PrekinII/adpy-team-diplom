@@ -153,17 +153,4 @@ def add_user_offer(add_offer_id, user_hunter, friend_or_foe):
     session.commit()
 
 
-# def delete_offer_if_blacklist():
-#     with Session() as session:
-#         offers_to_delete = (
-#             session.query(m.UserOffer.vk_offer_id)
-#             .filter(m.UserOffer.black_list == 1)
-#             .all()
-#         )
-#
-#         vk_offer_ids_to_delete = [offer_id for (offer_id,) in offers_to_delete]
-#         session.query(m.Offer).filter(m.Offer.vk_offer_id.in_(vk_offer_ids_to_delete)).delete(synchronize_session=False)
-#         session.commit()
-
-
 session.close()

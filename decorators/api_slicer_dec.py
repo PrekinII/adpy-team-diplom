@@ -12,7 +12,7 @@ def api_slicer_decorator(api_method_name, method_val_name="owner_id", sub_dict="
 
             all_data = []
             for offset in range(
-                0, 41, 20
+                0, 21, 20
             ):  # count(0, api_data_length) - replace range to get the full api search
                 data = inner_func(self, offset, *args, **kwargs)
 
