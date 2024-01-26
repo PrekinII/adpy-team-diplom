@@ -56,30 +56,6 @@ def add_offer(first_name: str, last_name: str, profile_link: str, user_id: int):
         session.commit()
 
 
-def add_black_list(vk_user_id: int, vk_offer_id: int):
-    with Session() as session:
-        session.query(m.UserOffer).filter(
-            m.UserOffer.vk_offer_id == vk_offer_id
-        ).filter(m.UserOffer.vk_user_id == vk_user_id).filter(
-            m.UserOffer.black_list == 0
-        ).update(
-            {"black_list": 1}
-        )
-        session.commit()
-
-
-def add_favorite(vk_user_id: int, vk_offer_id: int):
-    with Session() as session:
-        session.query(m.UserOffer).filter(
-            m.UserOffer.vk_offer_id == vk_offer_id
-        ).filter(m.UserOffer.vk_user_id == vk_user_id).filter(
-            m.UserOffer.black_list == 0
-        ).update(
-            {"favorite_list": 1}
-        )
-        session.commit()
-
-
 def add_interest(interest, vk_user_id=0, vk_offer_id=0):
     with Session() as session:
         interest_find = session.query(m.Interest.interest).filter(
@@ -155,20 +131,39 @@ def show_offer(person_id):  # Показать найденыша
     return {"person": person, "user_id": user_id}
 
 
-def add_user_offer(add_offer_id, user_hunter):  # добавляем в избранные
+def add_user_offer(add_offer_id, user_hunter, friend_or_foe):
     with Session() as session:
         add_offer_id = session.query(
             m.Offer.vk_offer_id,
         ).filter(m.Offer.vk_offer_id == add_offer_id)
-        for x in add_offer_id:
-            user_offer = m.UserOffer(
-                vk_user_id=user_hunter,
-                vk_offer_id=x.vk_offer_id,
-                black_list=0,
-                favorite_list=1,
-            )
-        session.add(user_offer)
-        session.commit()
+        if friend_or_foe == "friend":
+            black_list = 0
+            favorite_list = 1
+        else:
+            black_list = 1
+            favorite_list = 0
+
+        user_offer = m.UserOffer(
+            vk_user_id=user_hunter,
+            vk_offer_id=add_offer_id,
+            black_list=black_list,
+            favorite_list=favorite_list,
+        )
+    session.add(user_offer)
+    session.commit()
+
+
+# def delete_offer_if_blacklist():
+#     with Session() as session:
+#         offers_to_delete = (
+#             session.query(m.UserOffer.vk_offer_id)
+#             .filter(m.UserOffer.black_list == 1)
+#             .all()
+#         )
+#
+#         vk_offer_ids_to_delete = [offer_id for (offer_id,) in offers_to_delete]
+#         session.query(m.Offer).filter(m.Offer.vk_offer_id.in_(vk_offer_ids_to_delete)).delete(synchronize_session=False)
+#         session.commit()
 
 
 session.close()
