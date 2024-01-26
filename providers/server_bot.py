@@ -72,10 +72,13 @@ class ServerBot:
                     else:
                         sex = 0
 
-                    user_inst = VKBotAPI(self.get_user_token(), city, age, sex)
-                    for users_tup in itertools.chain(user_inst.process_user_info()):
-                        first_name, last_name, user_id, profile_link = users_tup
-                        add_offer(first_name, last_name, profile_link, user_id)
+                    age_range = range(age - 1, age + 2)
+                    usr_token = self.get_user_token()
+                    for usr_age in itertools.chain([age_range]):
+                        user_inst = VKBotAPI(usr_token, city, usr_age, sex)
+                        for users_tup in itertools.chain(user_inst.process_user_info()):
+                            first_name, last_name, user_id, profile_link = users_tup
+                            add_offer(first_name, last_name, profile_link, user_id)
 
                     break
 
@@ -140,8 +143,11 @@ class ServerBot:
             color=VkKeyboardColor.PRIMARY,
             payload={"type": "show_next_user"},
         )
+
         keyboard_2.add_button(label="В избранные", color=VkKeyboardColor.SECONDARY)
+        keyboard_2.add_button(label="Заблокировать", color=VkKeyboardColor.SECONDARY)
         keyboard_2.add_line()
+
         keyboard_2.add_button(
             label="Показать избранных", color=VkKeyboardColor.POSITIVE
         )
@@ -201,12 +207,23 @@ class ServerBot:
                     )
                     person_count += 1
 
+                elif request == "Заблокировать":
+                    self.send_msg(
+                        event.obj.message["peer_id"],
+                        message="Больше вы его не увидите",
+                    )
+                    add_user_offer(
+                        person_count - 1, event.obj.message["peer_id"], "foe"
+                    )
+
                 elif request == "В избранные":
                     self.send_msg(
                         event.obj.message["peer_id"],  # Добавляем в избранные
                         message="Добавлен в избранные",
                     )
-                    add_user_offer(person_count - 1, event.obj.message["peer_id"])
+                    add_user_offer(
+                        person_count - 1, event.obj.message["peer_id"], "friend"
+                    )
                 elif request == "Показать избранных":
                     self.send_msg(
                         event.obj.message["peer_id"],  # Отправляем список избранных
