@@ -21,7 +21,7 @@ def api_slicer_decorator(api_method_name, method_val_name="owner_id", sub_dict="
 
                 all_data.extend(data[sub_dict])
 
-            return all_data[0:3]
+            return all_data
 
         return wrapper
 

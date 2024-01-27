@@ -117,23 +117,25 @@ def get_offer_list(user_hunter):
 
 def show_offer(person_id):  # Показать найденыша
     with Session() as session:
-        found_match = False
-
-        while not found_match:
-            offer = session.query(
+        offer = (
+            session.query(
                 m.Offer.vk_offer_id,
                 m.Offer.first_name,
                 m.Offer.last_name,
                 m.Offer.profile_link,
                 m.Offer.user_id,
-            ).filter(m.Offer.vk_offer_id == person_id)
+            )
+            .filter(m.Offer.vk_offer_id == person_id)
+            .outerjoin(m.UserOffer, m.UserOffer.vk_offer_id == m.Offer.vk_offer_id)
+            .filter((m.UserOffer.black_list == 0) | (m.UserOffer.black_list == None))
+            .first()
+        )
 
-            for x in offer:
-                person = f"{x.first_name} | {x.last_name} | {x.profile_link}"
-                user_id = x.user_id
-                found_match = True
+        if offer is not None:
+            person = f"{offer.first_name} | {offer.last_name} | {offer.profile_link}"
+            user_id = offer.user_id
 
-        return {"person": person, "user_id": user_id}
+    return {"person": person, "user_id": user_id}
 
 
 def add_user_offer(add_offer_id, user_hunter, friend_or_foe):
