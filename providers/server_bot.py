@@ -194,22 +194,30 @@ class ServerBot:
                 request = event.obj.message["text"]
 
                 if request == "Следующий":
-                    self.send_msg(
-                        event.obj.message["peer_id"],
-                        message=show_offer(person_count)["person"],
-                    )
+                    try:
+                        self.send_msg(
+                            event.obj.message["peer_id"],
+                            message=show_offer(person_count)["person"],
+                        )
 
-                    user_inst = VKBotAPI(
-                        self.user_token, age=None, hometown=None, sex=None
-                    )
-                    liked_pics_ids = user_inst.process_user_pics(
-                        show_offer(person_count)["user_id"]
-                    )
-                    self.make_attachment(
-                        liked_pics_ids,
-                        event.obj.message["from_id"],
-                        show_offer(person_count)["user_id"],
-                    )
+                        user_inst = VKBotAPI(
+                            self.user_token, age=None, hometown=None, sex=None
+                        )
+                        liked_pics_ids = user_inst.process_user_pics(
+                            show_offer(person_count)["user_id"]
+                        )
+                        self.make_attachment(
+                            liked_pics_ids,
+                            event.obj.message["from_id"],
+                            show_offer(person_count)["user_id"],
+                        )
+                    except:
+                        self.send_msg(
+                            event.obj.message["peer_id"],
+                            message="It's a room with a user you don't like. "
+                            "Sorry I'm still struggling to find out a way how to pass it completely. "
+                            "Just hit 'Следующий'",
+                        )
 
                     if person_count < len(user_inst.process_user_info()):
                         person_count += 1
