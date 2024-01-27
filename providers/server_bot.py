@@ -29,9 +29,7 @@ class ServerBot:
         self.user_info = []
         self.user_token = ""
 
-    def send_msg(
-        self, send_id, message, keyboard=None
-    ):
+    def send_msg(self, send_id, message, keyboard=None):
         if keyboard:
             self.vk_api.messages.send(
                 peer_id=send_id,
@@ -53,12 +51,13 @@ class ServerBot:
             if event.type == VkBotEventType.MESSAGE_NEW:
                 request = event.obj.message["text"]
                 if request == "Привет" or "Ghbdtn":
-                    self.send_msg(event.obj.message["peer_id"], message="Come with me if you want to date!")
+                    self.send_msg(
+                        event.obj.message["peer_id"],
+                        message="Come with me if you want to date!",
+                    )
                     keyboard_oauth = self.user_token_button(self.api_id)
                     self.send_msg(
-                        event.obj.message[
-                            "peer_id"
-                        ],
+                        event.obj.message["peer_id"],
                         message="Получите и отправьте нам токен",
                         keyboard=keyboard_oauth,
                     )
@@ -164,9 +163,9 @@ class ServerBot:
                 self.send_msg(
                     event.obj.message["peer_id"],
                     message="Rotate the two locking cylinders counterclockwise. Do it. Now, open the port cover. "
-                            "Pull to break the seal. Good. Now, remove the shock dampening assembly. "
-                            "You can now access the CPU. Do you see it? "
-                            "Hey, dont touch your laptop! I'm joking - just enter 'Старт' in the dialog window below",
+                    "Pull to break the seal. Good. Now, remove the shock dampening assembly. "
+                    "You can now access the CPU. Do you see it? "
+                    "Hey, dont touch your laptop! I'm joking - just enter 'Старт' in the dialog window below",
                 )
                 return self.user_token
 
@@ -185,81 +184,82 @@ class ServerBot:
                 else:
                     self.send_msg(event.obj.message["peer_id"], message="Введите Старт")
 
-    max_count = float('inf')
     def choose_friends(self):
         person_count = 1
         favorites_show_flag = False
         button_add_flag = False
 
-        while True:
-            for event in self.long_poll.listen():
-                if event.type == VkBotEventType.MESSAGE_NEW:
-                    request = event.obj.message["text"]
+        for event in self.long_poll.listen():
+            if event.type == VkBotEventType.MESSAGE_NEW:
+                request = event.obj.message["text"]
 
-                    if request == "Следующий":
+                if request == "Следующий":
+                    self.send_msg(
+                        event.obj.message["peer_id"],
+                        message=show_offer(person_count)["person"],
+                    )
+
+                    user_inst = VKBotAPI(
+                        self.user_token, age=None, hometown=None, sex=None
+                    )
+                    liked_pics_ids = user_inst.process_user_pics(
+                        show_offer(person_count)["user_id"]
+                    )
+                    self.make_attachment(
+                        liked_pics_ids,
+                        event.obj.message["from_id"],
+                        show_offer(person_count)["user_id"],
+                    )
+
+                    if person_count < len(user_inst.process_user_info()):
+                        person_count += 1
+                    else:
+                        person_count = 1
+
+                    button_add_flag = True
+
+                elif request == "Заблокировать":
+                    if not button_add_flag:
                         self.send_msg(
                             event.obj.message["peer_id"],
-                            message=show_offer(person_count)["person"],
+                            message="Cyborgs don't feel pain. I do. Don't do that again.",
+                        )
+                    else:
+                        self.send_msg(
+                            event.obj.message["peer_id"],
+                            message="Hasta la vista, baby",
+                        )
+                        add_user_offer(
+                            person_count - 1, event.obj.message["peer_id"], "foe"
                         )
 
-                        user_inst = VKBotAPI(
-                            self.user_token, age=None, hometown=None, sex=None
+                elif request == "В Избранное":
+                    if not button_add_flag:
+                        self.send_msg(
+                            event.obj.message["peer_id"],
+                            message="Cyborgs don't feel pain. I do. Don't do that again.",
                         )
-                        liked_pics_ids = user_inst.process_user_pics(
-                            show_offer(person_count)["user_id"]
+                    else:
+                        self.send_msg(
+                            event.obj.message["peer_id"],
+                            message="I'll be back",
                         )
-                        self.make_attachment(
-                            liked_pics_ids,
-                            event.obj.message["from_id"],
-                            show_offer(person_count)["user_id"],
+                        add_user_offer(
+                            person_count - 1, event.obj.message["peer_id"], "friend"
                         )
-                        person_count += 1
-                        button_add_flag = True
+                        favorites_show_flag = True
 
-                    elif request == "Заблокировать":
-                        if not button_add_flag:
-                            self.send_msg(
-                                event.obj.message["peer_id"],
-                                message="Cyborgs don't feel pain. I do. Don't do that again.",
-                            )
-                        else:
-                            self.send_msg(
-                                event.obj.message["peer_id"],
-                                message="Hasta la vista, baby",
-                            )
-                            add_user_offer(
-                                (person_count - 1) % self.max_count, event.obj.message["peer_id"], "foe"
-                            )
-
-                    elif request == "В Избранное":
-                        if not button_add_flag:
-                            self.send_msg(
-                                event.obj.message["peer_id"],
-                                message="Cyborgs don't feel pain. I do. Don't do that again.",
-                            )
-                        else:
-                            self.send_msg(
-                                event.obj.message["peer_id"],
-                                message="I'll be back",
-                            )
-                            add_user_offer(
-                                (person_count - 1) % self.max_count, event.obj.message["peer_id"], "friend"
-                            )
-                            favorites_show_flag = True
-
-                    elif request == "Показать избранных":
-                        if not favorites_show_flag:
-                            self.send_msg(
-                                event.obj.message["peer_id"],
-                                message="Cyborgs don't feel pain. I do. Don't do that again.",
-                            )
-                        else:
-                            self.send_msg(
-                                event.obj.message["peer_id"],
-                                message=get_offer_list(
-                                    event.obj.message["peer_id"]
-                                ),
-                            )
+                elif request == "Показать избранных":
+                    if not favorites_show_flag:
+                        self.send_msg(
+                            event.obj.message["peer_id"],
+                            message="Cyborgs don't feel pain. I do. Don't do that again.",
+                        )
+                    else:
+                        self.send_msg(
+                            event.obj.message["peer_id"],
+                            message=get_offer_list(event.obj.message["peer_id"]),
+                        )
 
     def make_attachment(self, media_ids, user_id_hunter, user_id_prey):
         for media_id in media_ids:

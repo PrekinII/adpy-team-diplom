@@ -1,6 +1,5 @@
 import vk_api
 from itertools import chain
-from pprint import pprint
 
 from decorators.api_slicer_dec import api_slicer_decorator
 
@@ -76,7 +75,5 @@ class VKBotAPI:
                 self.user_init_link + str(usr_lnk["id"]),
             )
             users_main_data.append(user_data)
-        pprint(len(users_main_data))
-        pprint(users_main_data)
 
         return users_main_data

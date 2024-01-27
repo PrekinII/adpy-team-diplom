@@ -32,7 +32,6 @@ session = Session()
 def add_user(vk_user_id: int, sex: int, age: int, city: str):
     with Session() as session:
         user_find = session.query(m.User.vk_user_id).all()
-        print(user_find)
         if vk_user_id not in [user[0] for user in user_find]:
             user = m.User(
                 vk_user_id=vk_user_id,
