@@ -193,6 +193,10 @@ class ServerBot:
             if event.type == VkBotEventType.MESSAGE_NEW:
                 request = event.obj.message["text"]
 
+                user_inst = VKBotAPI(
+                    self.user_token, age=None, hometown=None, sex=None
+                )
+
                 if request == "Следующий":
                     try:
                         self.send_msg(
@@ -200,9 +204,6 @@ class ServerBot:
                             message=show_offer(person_count)["person"],
                         )
 
-                        user_inst = VKBotAPI(
-                            self.user_token, age=None, hometown=None, sex=None
-                        )
                         liked_pics_ids = user_inst.process_user_pics(
                             show_offer(person_count)["user_id"]
                         )
